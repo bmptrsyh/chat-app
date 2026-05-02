@@ -16,8 +16,12 @@ Route::middleware('auth:api')->group(function () {
     Route::post('conversation', [ConversationController::class,'store']);
     Route::get('conversation', [ConversationController::class,'index']);
     Route::get('conversation/{conversation}', [ConversationController::class,'show']);
+    Route::put('conversation/{conversation}/avatar', [ConversationController::class,'updateAvatar']);
+    Route::get('my-conversations', [ConversationController::class,'myConversations']);
 
     // Message
     Route::post('message/{conversation}', [MessageController::class,'store']);
     Route::get('message/{conversation}', [MessageController::class,'index']);
+    // Users
+    Route::get('users', [AuthController::class, 'users']);
 });

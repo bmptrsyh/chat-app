@@ -12,6 +12,7 @@ class Message extends Model
         'type',
         'message',
         'is_edited',
+        'file'
     ];
 
     public function conversation()

@@ -11,14 +11,21 @@ class Conversation extends Model
         'is_group',
         'created_by',
         'signature',
+        'avatar',
+        'avatar_updated_by'
     ];
 
-    public function user()
+    public function users()
     {
         return $this->belongsToMany(User::class, 'conversation_participants');
     }
 
     public function messages() {
         return $this->hasMany(Message::class);
+    }
+
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class)->latestOfMany();
     }
 }

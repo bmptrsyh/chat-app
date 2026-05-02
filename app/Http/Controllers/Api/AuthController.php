@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -21,9 +22,12 @@ class AuthController extends Controller
         }
         $credentials = $request->only('email','password');
 
-        if (! $token = auth('api')->attempt($credentials)) {
+        if (!Auth::attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+
+        $user = Auth::user();
+        $token = $user->createToken('ChatApp')->accessToken;
 
         return $this->respondWithToken($token);
     }
@@ -47,27 +51,35 @@ class AuthController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        $token = auth('api')->login($user);
+        $token = $user->createToken('ChatApp')->accessToken;
 
         return $this->respondWithToken($token);
     }
 
     public function me(Request $request)
     {
-        $user = auth('api')->user();
         return response()->json([
             'success'=> true,
             'message'=> 'user retrieved successfully',
-            'data' => $user,
+            'data' => $request->user(),
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('api')->logout();
+        $request->user()->token()->revoke();
         return response()->json([
             'success'=> true,
             'message'=> 'Successfully logged out',
+        ]);
+    }
+
+    public function users(Request $request)
+    {
+        $users = User::where('id', '!=', $request->user()->id)->get();
+        return response()->json([
+            'success' => true,
+            'data' => $users
         ]);
     }
 
@@ -79,7 +91,6 @@ class AuthController extends Controller
             'data' => [
                 'access_token' => $token,
                 'token_type' => 'bearer',
-                'expires_in' => auth('api')->factory()->getTTL() * 60,
             ],
         ]);
     }
